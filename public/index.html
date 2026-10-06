@@ -175,7 +175,7 @@ a{color:inherit}
   container-type:size;
 }
 /* gap and artwork share the free height in the reference ratio 82.98 : 318.68 → exact at 1280×800 */
-.field img{
+.field video{
   position:absolute;
   left:50%;
   /* the artwork's horizon (row 490 of 971) always sits 36.4u above the bottom of the copy;
@@ -190,7 +190,7 @@ a{color:inherit}
           mask-image:linear-gradient(180deg,transparent 0,#000 4%);
 }
 @supports (width:1cqw){
-  .field img{--h: max(calc(100cqw * 971 / 1619), calc((100cqh + 36.4 * var(--u)) / .49537 + 1px))}
+  .field video{--h: max(calc(100cqw * 971 / 1619), calc((100cqh + 36.4 * var(--u)) / .49537 + 1px))}
 }
 
 /* ---------- entrance: pre-roll states (applied only while JS runs the intro; no JS → no hiding) ---------- */
@@ -341,7 +341,7 @@ a{color:inherit}
   </main>
 
   <div class="field" aria-hidden="true">
-    <img src="assets/hero-background.jpg" alt="" decoding="async" fetchpriority="high">
+    <video src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20261005_182549_18378239-da8f-48a7-9666-d6e0a6a88561.mp4" autoplay muted loop playsinline></video>
   </div>
 </div>
 <script>
@@ -403,10 +403,17 @@ a{color:inherit}
   }
 
   /* start once the stage is ready: fonts (so lines mask correctly) and the static backdrop decoded */
-  var img=$('.field img');
+  var img=$('.field video');
+  var backdrop=img?new Promise(function(r){
+    if(img.readyState>=2) r();
+    else{
+      img.addEventListener('loadeddata',function(){r()}, {once:true});
+      img.addEventListener('error',function(){r()}, {once:true});
+    }
+  }):Promise.resolve();
   var stage=Promise.all([
     document.fonts?document.fonts.ready:Promise.resolve(),
-    img&&img.decode?img.decode().catch(function(){}):Promise.resolve()
+    backdrop
   ]);
   Promise.race([stage,new Promise(function(r){setTimeout(r,900)})]).then(function(){requestAnimationFrame(run)});
 })();
